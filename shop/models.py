@@ -49,6 +49,6 @@ class Order(db.Model):
     mail = db.Column(db.String)
     phone = db.Column(db.String, unique=True)
     address = db.Column(db.String)
-    user_id = db.Columnd(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', back_populates='orders')
     dishes = db.relationship('Dish', secondary='order_dishes', back_populates='orders')
