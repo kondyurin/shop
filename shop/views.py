@@ -29,3 +29,11 @@ def add_to_cart(dish_id):
     cart.append(dish_id)
     session['cart'] = cart
     return redirect(url_for(".cart"))
+
+
+@app.route("/del/<int:dish_id>/")
+def remove_from_cart(dish_id):
+    cart = session.get('cart', [])
+    cart.remove(dish_id)
+    session['cart'] = cart
+    return redirect(url_for(".cart"))
