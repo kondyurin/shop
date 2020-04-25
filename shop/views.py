@@ -52,3 +52,25 @@ def register():
         db.session.commit()
         return redirect(url_for(".cart"))
     return render_template("register.html")
+
+
+@app.route("/auth/", methods=["GET", "POST"])
+def auth():
+    if session.get('user.id'):
+        return redirect(url_for(".account"))
+    if request.method == "POST":
+        mail = request.form.get('user_mail')
+        password = request.form.get('user_password')
+        user = User.query.filter_by(mail=mail).first()
+        if user and user.mail == mail: #сравнивать пароли
+            session['user'] = {
+                "id": user.id,
+                "mail": user.mail
+            }
+            return redirect(url_for(".account"))
+    return render_template("auth.html")
+
+
+@app.route("/account/")
+def account():
+    return render_template("account.html")
