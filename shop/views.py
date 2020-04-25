@@ -2,9 +2,10 @@ import random
 
 from flask import render_template, redirect, session, url_for, request
 from sqlalchemy.sql.expression import func
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from shop import app, db
-from shop.models import Dish, Category
+from shop.models import Dish, Category, User
 
 
 @app.route("/")
@@ -37,3 +38,17 @@ def remove_from_cart(dish_id):
     cart.remove(dish_id)
     session['cart'] = cart
     return redirect(url_for(".cart"))
+
+
+@app.route("/register/", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        mail = request.form.get("user_mail")
+        password_hash = generate_password_hash(request.form.get("user_password"))
+        if not mail or not password_hash:
+            return redirect(url_for(".register"))
+        user = User(mail=mail, password=password_hash)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for(".cart"))
+    return render_template("register.html")
