@@ -23,8 +23,6 @@ def main():
 def cart():
     is_auth = session.get('user', {})
     current_cart = session.get('cart', [])
-    print(session.get('cart'))
-    print(session['user'])
     cart_dishes = Dish.query.filter(Dish.id.in_(current_cart)).all()
     return render_template("cart.html", cart_dishes=cart_dishes, is_auth=is_auth)
 
@@ -92,7 +90,7 @@ def order():
         address = request.form.get('order_address')
         user_id = session.get('user').get('id')
         user = User.query.get_or_404(user_id)
-        dishes = list(set(session.get('cart')))
+        dishes = session.get('cart')
         amount = len(dishes)
         order = Order(timestamp=datetime.utcnow(), amount=amount, mail=mail, phone=phone, address=address, user=user)
         db.session.add(order)
