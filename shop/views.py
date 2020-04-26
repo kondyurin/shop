@@ -10,11 +10,12 @@ from shop.models import Dish, Category, User
 
 @app.route("/")
 def main():
+    is_auth = session.get('user', {})
     categories = Category.query.all()
     random_dishes = [random.sample(item.dishes, 3) for item in categories]
     current_cart = session.get('cart', [])
     cart_dishes = Dish.query.filter(Dish.id.in_(current_cart)).all()
-    return render_template("main.html", categories=categories, random_dishes=random_dishes, cart_dishes=cart_dishes)
+    return render_template("main.html", categories=categories, random_dishes=random_dishes, cart_dishes=cart_dishes, is_auth=is_auth)
 
 
 @app.route("/cart/")
@@ -56,7 +57,7 @@ def register():
 
 @app.route("/auth/", methods=["GET", "POST"])
 def auth():
-    if session.get('user.id'):
+    if session.get('user'):
         return redirect(url_for(".account"))
     if request.method == "POST":
         mail = request.form.get('user_mail')
@@ -69,6 +70,12 @@ def auth():
             }
             return redirect(url_for(".account"))
     return render_template("auth.html")
+
+
+@app.route("/logout/")
+def logout():
+    session.pop('user')
+    return redirect(url_for(".auth"))
 
 
 @app.route("/account/")
