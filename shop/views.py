@@ -102,4 +102,10 @@ def order():
 
 @app.route("/account/")
 def account():
-    return render_template("account.html")
+    is_auth = session.get('user', {})
+    if not is_auth:
+        return redirect(url_for('auth'))
+    current_cart = session.get('cart', [])
+    user_mail = session.get('user').get('mail')
+    order_list = Order.query.filter(Order.mail == user_mail).all()
+    return render_template("account.html", is_auth=is_auth, current_cart=current_cart, order_list=order_list)
