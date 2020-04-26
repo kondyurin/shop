@@ -65,7 +65,7 @@ def auth():
         mail = request.form.get('user_mail')
         password = request.form.get('user_password')
         user = User.query.filter_by(mail=mail).first()
-        if user and user.mail == mail: #сравнивать пароли
+        if user and check_password_hash(user.password, password):
             session['user'] = {
                 "id": user.id,
                 "mail": user.mail
