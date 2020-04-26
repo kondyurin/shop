@@ -93,6 +93,9 @@ def order():
         dishes = session.get('cart')
         amount = len(dishes)
         order = Order(timestamp=datetime.utcnow(), amount=amount, mail=mail, phone=phone, address=address, user=user)
+        for item in dishes:
+            dish = Dish.query.filter(Dish.id == item).first()
+            order.dishes.append(dish)
         db.session.add(order)
         db.session.commit()
         session.pop('cart')  #remove cart item after order
