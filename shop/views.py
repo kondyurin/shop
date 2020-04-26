@@ -1,11 +1,12 @@
 import random
+from datetime import datetime
 
 from flask import render_template, redirect, session, url_for, request
 from sqlalchemy.sql.expression import func
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from shop import app, db
-from shop.models import Dish, Category, User
+from shop.models import Dish, Category, User, Order
 
 
 @app.route("/")
@@ -20,16 +21,19 @@ def main():
 
 @app.route("/cart/")
 def cart():
+    is_auth = session.get('user', {})
     current_cart = session.get('cart', [])
+    print(session.get('cart'))
+    print(session['user'])
     cart_dishes = Dish.query.filter(Dish.id.in_(current_cart)).all()
-    return render_template("cart.html", cart_dishes=cart_dishes)
+    return render_template("cart.html", cart_dishes=cart_dishes, is_auth=is_auth)
 
 
 @app.route("/add/<int:dish_id>/")
 def add_to_cart(dish_id):
     cart = session.get('cart', [])
     cart.append(dish_id)
-    session['cart'] = cart
+    session['cart'] = list(set(cart))
     return redirect(url_for(".cart"))
 
 
@@ -37,7 +41,7 @@ def add_to_cart(dish_id):
 def remove_from_cart(dish_id):
     cart = session.get('cart', [])
     cart.remove(dish_id)
-    session['cart'] = cart
+    session['cart'] = list(set(cart))
     return redirect(url_for(".cart"))
 
 
@@ -76,6 +80,26 @@ def auth():
 def logout():
     session.pop('user')
     return redirect(url_for(".auth"))
+
+
+@app.route("/ordered/", methods=["GET", "POST"])
+def order():
+    if not session.get('user'):
+        return redirect(url_for('.auth'))
+    if request.method == "POST":
+        mail = session.get('user').get('mail')  #get mail from session, not from form
+        phone = request.form.get('order_phone')
+        address = request.form.get('order_address')
+        user_id = session.get('user').get('id')
+        user = User.query.get_or_404(user_id)
+        dishes = list(set(session.get('cart')))
+        amount = len(dishes)
+        order = Order(timestamp=datetime.utcnow(), amount=amount, mail=mail, phone=phone, address=address, user=user)
+        db.session.add(order)
+        db.session.commit()
+        session.pop('cart')  #remove cart item after order
+        return render_template("ordered.html")
+    return render_template("ordered.html")
 
 
 @app.route("/account/")
