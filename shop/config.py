@@ -1,8 +1,10 @@
 import os
+import locale
 
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 prefix = 'sqlite:///'
+locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
 
 class BaseConfig():
